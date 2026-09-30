@@ -2,7 +2,19 @@
 
 Download the latest Android APK:
 
-- [AZ Voice Assistant v1.1 APK](AZ-Voice-Assistant-v1.1.apk)
+- [AZ Voice Assistant v1.2 APK](AZ-Voice-Assistant-v1.2.apk)
+
+## v1.2
+
+- Faster Bangla and English voice response
+- Change the assistant name in Settings
+- Custom wake phrase: `Hey [your chosen name]`
+- Open WhatsApp, YouTube, Gmail and Google Maps by voice
+- Open other installed apps by saying `Open [app name]`
+- Prepare WhatsApp messages with confirmation
+- Safety confirmation remains enabled for calls, messages and bookings
+
+SHA-256: `35557d9b2bb8b16088c49828504ac8016b558b38ed3dc890d6136107d8f06f29`
 
 ## v1.1
 
