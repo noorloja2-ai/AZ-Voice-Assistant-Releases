@@ -2,7 +2,17 @@
 
 Download the latest Android APK:
 
-- [AZ Voice Assistant v1.3 APK](AZ-Voice-Assistant-v1.3.apk)
+- [AZ Voice Assistant v1.4 APK](AZ-Voice-Assistant-v1.4.apk)
+
+## v1.4
+
+- Google-Assistant-style wake conversation
+- Say `Hey AZ` and AZ answers `জি, বলুন` / `Yes, tell me`
+- AZ automatically listens for the next command
+- Say a complete command such as `Hey AZ, open YouTube` for immediate action
+- Temporarily pauses the background listener while receiving the command to avoid microphone conflicts
+
+SHA-256: `f538d392c732cf86a77cc81a634f0cfea96c5b09c74d44b30d1f3ad17069ed2e`
 
 ## v1.3
 
