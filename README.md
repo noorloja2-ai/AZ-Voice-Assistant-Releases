@@ -2,7 +2,17 @@
 
 Download the latest Android APK:
 
-- [AZ Voice Assistant v1.2 APK](AZ-Voice-Assistant-v1.2.apk)
+- [AZ Voice Assistant v1.3 APK](AZ-Voice-Assistant-v1.3.apk)
+
+## v1.3
+
+- Repairs the background `Hey AZ` listener
+- Automatically restarts listening after silence, timeout or recognition errors
+- Recreates the recognizer if Android reports it busy or stopped
+- Uses a persistent microphone foreground service
+- Keeps the listener active when the screen is locked
+
+SHA-256: `7eb8510c180b94cb2bc30765576227a1ebd661b16b2869e8df553fe351afae36`
 
 ## v1.2
 
