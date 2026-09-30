@@ -2,7 +2,17 @@
 
 Download the latest Android APK:
 
-- [AZ Voice Assistant v1.4 APK](AZ-Voice-Assistant-v1.4.apk)
+- [AZ Voice Assistant v1.5 APK](AZ-Voice-Assistant-v1.5.apk)
+
+## v1.5
+
+- Fixes `Voice recognition stopped` microphone conflict
+- Pauses the background wake listener while AZ receives a command
+- Automatically retries if Android reports the recognizer busy
+- Automatically resumes `Hey AZ` after the command
+- Shows the Android recognition error number for easier diagnosis
+
+SHA-256: `14cb74713f47d717c24f0207a7e017d8b5802e669fa2cadc98a0f99ddfe11765`
 
 ## v1.4
 
