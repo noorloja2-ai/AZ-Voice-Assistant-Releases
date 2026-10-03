@@ -1,0 +1,135 @@
+name: Build and publish AZ Voice Assistant v2.1.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-v2.1.0.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout releases repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Restore AZ Voice v2.1.0 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/az210/app
+          cat .az-v2.1.0/source.b64.part* | base64 -d > /tmp/az210/source.tar.gz
+          tar -xzf /tmp/az210/source.tar.gz -C /tmp/az210/app
+          test -f /tmp/az210/app/package.json
+          grep -q '"version": "2.1.0"' /tmp/az210/app/package.json
+
+      - name: Install dependencies and build web app
+        working-directory: /tmp/az210/app
+        run: |
+          npm install
+          npm run build
+          npx cap sync android
+
+      - name: Download offline Vosk wake model
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --retry-delay 2 \
+            -o /tmp/az-model.zip \
+            https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+          unzip -q /tmp/az-model.zip -d /tmp/az-model
+          mkdir -p /tmp/az210/app/android/app/src/main/assets/model-en-us
+          cp -a /tmp/az-model/vosk-model-small-en-us-0.15/. \
+            /tmp/az210/app/android/app/src/main/assets/model-en-us/
+          test -f /tmp/az210/app/android/app/src/main/assets/model-en-us/am/final.mdl
+
+      - name: Build v2.1.0 APK
+        working-directory: /tmp/az210/app/android
+        run: gradle --no-daemon assembleDebug
+
+      - name: Verify APK version and stage release
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK_NAME='AZ-Voice-Assistant-v2.1.0.apk'
+          SRC='/tmp/az210/app/android/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$SRC"
+          cp "$SRC" "$GITHUB_WORKSPACE/$APK_NAME"
+          sha=$(sha256sum "$GITHUB_WORKSPACE/$APK_NAME" | awk '{print $1}')
+          echo "APK_SHA256=$sha" >> "$GITHUB_ENV"
+
+      - name: Update release README
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          p = Path('README.md')
+          s = p.read_text(encoding='utf-8') if p.exists() else '# AZ Voice Assistant Releases\n\nDownload the latest Android APK:\n\n'
+          link = '- [AZ Voice Assistant v2.1.0 APK](AZ-Voice-Assistant-v2.1.0.apk)'
+
+          old_link = r'- \[AZ Voice Assistant v[^\]]+ APK\]\([^)]+\)'
+          if re.search(old_link, s):
+              s = re.sub(old_link, link, s, count=1)
+          elif link not in s:
+              s += '\n' + link + '\n'
+
+          if '## v2.1.0' not in s:
+              s += (
+                  '\n## v2.1.0\n\n'
+                  '- AZ Voice Assistant v2.1.0\n'
+                  '- Offline `Hey AZ` wake listening with Vosk\n'
+                  '- Android package: `com.az.voiceassistant.v2`\n'
+                  '- versionCode: `12`\n'
+              )
+
+          sha = os.environ['APK_SHA256']
+          marker = f'SHA-256: `{sha}`'
+          if marker not in s:
+              s += f'\n{marker}\n'
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Publish APK to Releases repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add AZ-Voice-Assistant-v2.1.0.apk README.md
+          git commit -m 'Publish AZ Voice Assistant v2.1.0 APK [skip ci]'
+          git push
+
+      - name: Upload Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AZ-Voice-Assistant-v2.1.0
+          path: AZ-Voice-Assistant-v2.1.0.apk
+          if-no-files-found: error
